@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-type SdpStorage struct {
+type sdpStorage struct {
 	listeners map[string]*Listener
 	storage   map[string]*SDPClient
 
@@ -14,15 +14,15 @@ type SdpStorage struct {
 	storageM   sync.Mutex
 }
 
-func NewSDPStorage() (ss *SdpStorage) {
-	ss = &SdpStorage{
+func newSDPStorage() (ss *sdpStorage) {
+	ss = &sdpStorage{
 		listeners: map[string]*Listener{},
 		storage:   map[string]*SDPClient{},
 	}
 	return
 }
 
-func (ss *SdpStorage) AddSDPListener(id string) (l *Listener, err error) {
+func (ss *sdpStorage) AddSDPListener(id string) (l *Listener, err error) {
 	ss.listenersM.Lock()
 	defer ss.listenersM.Unlock()
 
@@ -37,7 +37,7 @@ func (ss *SdpStorage) AddSDPListener(id string) (l *Listener, err error) {
 	return
 }
 
-func (ss *SdpStorage) GetSDPListener(id string) (l *Listener, err error) {
+func (ss *sdpStorage) GetSDPListener(id string) (l *Listener, err error) {
 	ss.listenersM.Lock()
 	defer ss.listenersM.Unlock()
 
@@ -51,7 +51,7 @@ func (ss *SdpStorage) GetSDPListener(id string) (l *Listener, err error) {
 	return
 }
 
-func (ss *SdpStorage) AddSDPToStorage(id, sdp string, data map[string]string) (err error) {
+func (ss *sdpStorage) AddSDPToStorage(id, sdp string, data map[string]string) (err error) {
 	ss.storageM.Lock()
 	defer ss.storageM.Unlock()
 
@@ -70,7 +70,7 @@ func (ss *SdpStorage) AddSDPToStorage(id, sdp string, data map[string]string) (e
 	return
 }
 
-func (ss *SdpStorage) GetSDPFromStorage(id string) (sdp *SDPClient, err error) {
+func (ss *sdpStorage) GetSDPFromStorage(id string) (sdp *SDPClient, err error) {
 	ss.storageM.Lock()
 	defer ss.storageM.Unlock()
 

@@ -6,22 +6,21 @@ import (
 	"github.com/aliforever/go-httpjson"
 )
 
-// TODO:
-// 1. SDPCommunicate/SDPHandshake
-// 2. SDPInform
-// 3. SDPStore
-
 type SignalingServer struct {
-	storage *SdpStorage
+	storage *sdpStorage
 }
 
 func New() (ss *SignalingServer) {
-	ss = &SignalingServer{storage: NewSDPStorage()}
+	ss = &SignalingServer{storage: newSDPStorage()}
 	return
 }
 
-func (ss *SignalingServer) Listen(address string) (server *http.Server, err error) {
-	m := http.NewServeMux()
+func (ss *SignalingServer) Listen(address string, handler *http.ServeMux) (server *http.Server, err error) {
+	m := handler
+	if m == nil {
+		m = http.NewServeMux()
+	}
+
 	m.HandleFunc("/sdp_handshake", ss.sdpHandShakerHandler)
 	m.HandleFunc("/sdp_inform", ss.sdpInformListenerHandler)
 	m.HandleFunc("/sdp_store", ss.sdpInformListenerHandler)
