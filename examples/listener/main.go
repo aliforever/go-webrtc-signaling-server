@@ -57,5 +57,5 @@ func client(listener *webrtcsignalingserver.Listener, wg *sync.WaitGroup) {
 	}
 
 	serverSDP := listener.ReadServerSDP()
-	fmt.Println("Received Server SDPServer", serverSDP.SDPBase64, "with data", serverSDP.ServerData)
+	fmt.Println("Received Server SDPServer", serverSDP.Base64(), "with data", serverSDP.Data)
 }

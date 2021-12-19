@@ -13,8 +13,8 @@ type SDPServer struct {
 	Data map[string]string `json:"data,omitempty"`
 }
 
-func (s *SDPServer) SDP() (sd *webrtc.SessionDescription) {
-	return s.sdp
+func (s *SDPServer) Base64() (sd string) {
+	return s.b64
 }
 
 func DecodeBase64StringToWebrtcSDP(sdpBase64Str string) (sdp *webrtc.SessionDescription, err error) {
