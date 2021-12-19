@@ -1,4 +1,4 @@
-package internal
+package webrtcsignalingserver
 
 import (
 	"bytes"
@@ -114,7 +114,7 @@ a=ssrc-group:FID 1972625715 697265957
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sr := &SDPRequest{
+			sr := &sDPRequest{
 				Id:   tt.fields.Id,
 				SDP:  tt.fields.SDP,
 				Data: tt.fields.Data,

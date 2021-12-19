@@ -1,4 +1,4 @@
-package webrtc_signaling_server
+package webrtcsignalingserver
 
 import (
 	"net/http"
@@ -6,19 +6,25 @@ import (
 	"github.com/aliforever/go-httpjson"
 )
 
+// TODO:
+// 1. SDPCommunicate/SDPHandshake
+// 2. SDPInform
+// 3. SDPStore
+
 type SignalingServer struct {
-	storage *sdpStorage
+	storage *SdpStorage
 }
 
-func NewSignalingServer() (ss *SignalingServer) {
-	ss = &SignalingServer{storage: newSDPStorage()}
+func New() (ss *SignalingServer) {
+	ss = &SignalingServer{storage: NewSDPStorage()}
 	return
 }
 
 func (ss *SignalingServer) Listen(address string) (server *http.Server, err error) {
 	m := http.NewServeMux()
-	m.HandleFunc("/inform-SDP", ss.informSDPListenerHandler)
-	m.HandleFunc("/await-SDP", ss.getSDPFromListenerHandler)
+	m.HandleFunc("/sdp_handshake", ss.sdpHandShakerHandler)
+	m.HandleFunc("/sdp_inform", ss.sdpInformListenerHandler)
+	m.HandleFunc("/sdp_store", ss.sdpInformListenerHandler)
 
 	server = &http.Server{Addr: address, Handler: m}
 	err = server.ListenAndServe()
@@ -26,59 +32,87 @@ func (ss *SignalingServer) Listen(address string) (server *http.Server, err erro
 	return
 }
 
-func (ss *SignalingServer) AddSDPListener(id string) (sdpListener chan *SDP, err error) {
-	sdpListener, err = ss.storage.AddSDPListener(id)
+func (ss *SignalingServer) AddSDPListener(id string) (l *Listener, err error) {
+	l, err = ss.storage.AddSDPListener(id)
 	return
 }
 
-func (ss *SignalingServer) informSDPListenerHandler(writer http.ResponseWriter, request *http.Request) {
-	var sar *sdpAddRequest
+func (ss *SignalingServer) sdpHandShakerHandler(writer http.ResponseWriter, request *http.Request) {
+	var sar *sDPRequest
 
 	err := httpjson.ParseRequest(writer, request, &sar)
 	if err != nil {
 		return
 	}
 
-	if sar.Id == "" {
-		httpjson.BadRequest(writer, "empty_id")
+	err = sar.Validate()
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
 		return
 	}
 
-	if sar.Sdp == "" {
-		httpjson.BadRequest(writer, "empty_sdp")
+	listener, err := ss.storage.GetSDPListener(sar.Id)
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
 		return
 	}
 
-	err = ss.storage.InformSDPListener(sar.Id, sar.Sdp, sar.Data)
+	err = listener.WriteClientSDP(sar.SDP, sar.Data)
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
+		return
+	}
+
+	httpjson.Ok(writer, listener.ReadServerSDP())
+}
+
+func (ss *SignalingServer) sdpInformListenerHandler(writer http.ResponseWriter, request *http.Request) {
+	var sar *sDPRequest
+
+	err := httpjson.ParseRequest(writer, request, &sar)
+	if err != nil {
+		return
+	}
+
+	err = sar.Validate()
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
+		return
+	}
+
+	var l *Listener
+	l, err = ss.storage.GetSDPListener(sar.Id)
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
+		return
+	}
+
+	err = l.WriteClientSDP(sar.SDP, sar.Data)
 	if err != nil {
 		httpjson.BadRequest(writer, err.Error())
 		return
 	}
 
 	httpjson.Ok(writer, "success")
-	return
 }
 
-func (ss *SignalingServer) getSDPFromListenerHandler(writer http.ResponseWriter, request *http.Request) {
-	var sar *sdpAwaitRequest
+func (ss *SignalingServer) sdpStoreHandler(writer http.ResponseWriter, request *http.Request) {
+	var sar *sDPRequest
 
 	err := httpjson.ParseRequest(writer, request, &sar)
 	if err != nil {
 		return
 	}
 
-	if sar.Id == "" {
-		httpjson.BadRequest(writer, "empty_id")
-		return
-	}
-
-	var sdpListener chan *SDP
-	sdpListener, err = ss.storage.GetSDPListener(sar.Id)
+	err = sar.Validate()
 	if err != nil {
 		httpjson.BadRequest(writer, err.Error())
 		return
 	}
 
-	httpjson.Ok(writer, newSDPAwaitResponse(<-sdpListener))
-	return
+	err = ss.storage.AddSDPToStorage(sar.Id, sar.SDP, sar.Data)
+	if err != nil {
+		httpjson.BadRequest(writer, err.Error())
+		return
+	}
 }
