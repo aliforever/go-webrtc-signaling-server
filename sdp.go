@@ -8,13 +8,13 @@ import (
 )
 
 type SDPServer struct {
-	sdp  *webrtc.SessionDescription
-	b64  string
-	Data map[string]string `json:"data,omitempty"`
+	sdp       *webrtc.SessionDescription
+	SDPBase64 string            `json:"sdp"`
+	Data      map[string]string `json:"data,omitempty"`
 }
 
 func (s *SDPServer) Base64() (sd string) {
-	return s.b64
+	return s.SDPBase64
 }
 
 func DecodeBase64StringToWebrtcSDP(sdpBase64Str string) (sdp *webrtc.SessionDescription, err error) {
@@ -42,9 +42,9 @@ func newServerSDP(sdp *webrtc.SessionDescription, data map[string]string) (serve
 	}
 
 	serverSDP = &SDPServer{
-		sdp:  sdp,
-		b64:  sdpBase64,
-		Data: data,
+		sdp:       sdp,
+		SDPBase64: sdpBase64,
+		Data:      data,
 	}
 
 	return
