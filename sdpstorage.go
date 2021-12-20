@@ -51,6 +51,24 @@ func (ss *sdpStorage) GetSDPListener(id string) (l *Listener, err error) {
 	return
 }
 
+func (ss *sdpStorage) DeleteSDPListener(id string) (err error) {
+
+	ss.listenersM.Lock()
+	defer ss.listenersM.Unlock()
+
+	l, exists := ss.listeners[id]
+	if !exists {
+		err = errors.New("listener_does_not_exist")
+		return
+	}
+
+	close(l.serverSDP)
+	close(l.clientSDP)
+
+	delete(ss.listeners, id)
+	return
+}
+
 func (ss *sdpStorage) AddSDPToStorage(id, sdp string, data map[string]string) (err error) {
 	ss.storageM.Lock()
 	defer ss.storageM.Unlock()

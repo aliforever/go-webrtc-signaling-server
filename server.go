@@ -36,6 +36,11 @@ func (ss *SignalingServer) AddSDPListener(id string) (l *Listener, err error) {
 	return
 }
 
+func (ss *SignalingServer) DeleteSDPListener(id string) (err error) {
+	err = ss.storage.DeleteSDPListener(id)
+	return
+}
+
 func (ss *SignalingServer) sdpHandShakerHandler(writer http.ResponseWriter, request *http.Request) {
 	var sar *sDPRequest
 
