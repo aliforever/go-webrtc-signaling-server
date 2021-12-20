@@ -67,7 +67,11 @@ func (ss *SignalingServer) sdpHandShakerHandler(writer http.ResponseWriter, requ
 		return
 	}
 
-	httpjson.Ok(writer, listener.ReadServerSDP())
+	serverSDP := listener.ReadServerSDP()
+
+	ss.DeleteSDPListener(sar.Id)
+
+	httpjson.Ok(writer, serverSDP)
 }
 
 func (ss *SignalingServer) sdpInformListenerHandler(writer http.ResponseWriter, request *http.Request) {
