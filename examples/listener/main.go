@@ -10,7 +10,7 @@ import (
 func main() {
 	s := webrtcsignalingserver.New()
 	go func() {
-		_, err := s.Listen(":80")
+		_, err := s.Listen(":80", nil)
 		panic(err)
 	}()
 

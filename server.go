@@ -36,11 +36,6 @@ func (ss *SignalingServer) AddSDPListener(id string) (l *Listener, err error) {
 	return
 }
 
-func (ss *SignalingServer) DeleteSDPListener(id string) (err error) {
-	err = ss.storage.DeleteSDPListener(id)
-	return
-}
-
 func (ss *SignalingServer) sdpHandShakerHandler(writer http.ResponseWriter, request *http.Request) {
 	var sar *sDPRequest
 
@@ -68,8 +63,6 @@ func (ss *SignalingServer) sdpHandShakerHandler(writer http.ResponseWriter, requ
 	}
 
 	serverSDP := listener.ReadServerSDP()
-
-	ss.DeleteSDPListener(sar.Id)
 
 	httpjson.Ok(writer, serverSDP)
 }
